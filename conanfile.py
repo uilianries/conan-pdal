@@ -10,6 +10,7 @@ class PdalConan(ConanFile):
     source_dir = "gdal-%s" % version
     url = "https://github.com/novolog/conan-pdal"
     license = "BSD"
+    exports = "pdal.patch"
     exports_sources = ["CMakeLists.txt"]
     generators = "cmake"
     options = {"with_laszip": [True, False]}
@@ -18,6 +19,7 @@ class PdalConan(ConanFile):
         "gdal/2.3.2@novolog/stable",
         "libcurl/7.56.1@bincrafters/stable",
         "libgeotiff/1.4.2@novolog/stable",
+        "OpenSSL/1.0.2p@conan/stable"
         # proj4 ?
         # "laszip/3.1.1@novolog/stable",  # optional todo use option
         # "libxml2/2.9.8@bincrafters/stable",  # optional todo use option
@@ -25,9 +27,7 @@ class PdalConan(ConanFile):
     )
 
     default_options = {
-        "with_laszip": False,
-        "libcurl:shared": True,
-        "libxml2:shared": True
+        "with_laszip": False
     }
 
     _source_subfolder = "source_subfolder"
@@ -84,7 +84,6 @@ class PdalConan(ConanFile):
 
         self._configure_deps_paths(cmake, "gdal", "GDAL")
         self._configure_deps_paths(cmake, "libgeotiff", "GEOTIFF")
-        self._configure_deps_paths(cmake, "libcurl", "CURL")
         self._configure_cmake_laszip_options(cmake)
 
         cmake.definitions["WITH_TESTS"] = "OFF"
@@ -93,6 +92,7 @@ class PdalConan(ConanFile):
         return cmake
 
     def build(self):
+        tools.patch(base_path=self._source_subfolder, patch_file="pdal.patch")
         cmake = self._configure_cmake()
         cmake.build()
 
